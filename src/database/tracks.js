@@ -1,54 +1,61 @@
+import Base from './base';
+
 const Schema = {
   name: 'Tracks',
   properties: {
     _id: 'string',
-    title: 'string',
-    unit: 'string',
-    value: 'int',
-    dayLimit: 'int',
+    date: 'string',
+    data: '{}',
   },
   primaryKey: '_id',
 };
 
-export default class Track {
-  db;
+function uuid() {
+  return `id-${Math.random().toString(16).slice(2)}`;
+}
 
+/**
+ * Convert timestamp to zero hours
+ *
+ * @param {number} timestamp
+ * @returns timestamp
+ */
+function setDateTimeZero(timestamp) {
+  const time = new Date(timestamp);
+  time.setHours(0, 0, 0, 0);
+  return time.getTime();
+}
+
+/**
+ * Convert timestamp to date dd-mm-yyyy
+ *
+ * @param {number|string} timestamp
+ * @returns string
+ */
+function formateDate(timestamp) {
+  const time = new Date(timestamp);
+  const dd = time.getDate();
+  const mm = time.getMonth() + 1; //January is 0!
+  const yyyy = time.getFullYear();
+  return `${dd < 10 ? '0' + dd : dd}-${mm < 10 ? '0' + mm : mm}-${yyyy}`;
+}
+
+export default class Track extends Base {
   static Schema = Schema;
-
-  constructor(db, listener = (list, changes) => {}) {
-    this.db = db;
-    // this.db.addListener(listener);
+  constructor(db) {
+    super(db, Schema);
   }
 
-  insert(record) {
-    this.db.write(() => {
-      this.db.create(Schema.name, record);
-    });
-  }
+  addRecord(timestamp, record) {
+    const reformat = {
+      _id: uuid(),
+      date: formateDate(setDateTimeZero(timestamp)),
+      data: {
+        date: timestamp,
+        ...record,
+      },
+    };
 
-  insertBulk(records) {
-    this.db.write(() => {
-      records.forEach(record => {
-        this.db.create(Schema.name, record);
-      });
-    });
-  }
-
-  fetch() {
-    return this.db.objects(Schema.name);
-  }
-
-  filter(rule) {
-    return this.db.filtered(rule);
-  }
-
-  sort(rule) {
-    return this.db.sorted(rule);
-  }
-
-  delete(item) {
-    return this.db.write(() => {
-      this.db.delete(item);
-    });
+    this.insert(reformat);
   }
 }

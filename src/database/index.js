@@ -1,42 +1,53 @@
 import Realm from 'realm';
 import Track from './tracks';
+import TrackList from './tracklist';
 
 let realm;
+
+let restart = true;
 
 async function Bootstrap() {
   realm = await Realm.open({
     path: 'tracker',
-    schema: [Track.Schema],
+    schemaVersion: 1,
+    schema: [Track.Schema, TrackList.Schema],
   });
 
-  console.log(
-    realm.objects(Track.Schema.name).map(x => {
-      console.log(x);
-    }),
-  );
+  Collections.Tracks = new Track(realm);
+  Collections.TrackLists = new TrackList(realm);
 
-  try {
-    const track = new Track(realm, () => {});
+  if (restart === true) {
+    console.log('Updating TrackerList');
 
-    console.log('My trakc', track);
+    Collections.TrackLists.purge();
 
-    track.insert({
-      _id: 'he' + new Date().getTime(),
-      title: 'demo',
-      unit: 'cups',
-      value: 0,
-      dayLimit: 10,
+    Collections.TrackLists.insert({
+      title: 'BMW S1000RR',
+      unit: 'rides',
+      dayLimit: 0,
     });
 
-    console.log('Fetch', track.fetch());
-  } catch (e) {
-    console.log(e);
-  }
+    Collections.TrackLists.insert({
+      title: 'Dogs',
+      unit: 'walks',
+      dayLimit: 0,
+    });
 
-  // Remember to close the realm
-  // realm.close();
+    Collections.TrackLists.insert({
+      title: 'Work',
+      unit: 'days',
+      dayLimit: 0,
+    });
+
+    console.log(
+      'TrackerList',
+      Collections.TrackLists.fetch().map(track => track.title),
+    );
+  }
 }
 
 Bootstrap().catch(error => {
   console.log(`An error occurred: ${error}`);
 });
+
+export let Collections = {};
