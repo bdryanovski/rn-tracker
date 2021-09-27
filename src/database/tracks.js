@@ -1,17 +1,17 @@
 import Base from './base';
 
 const Schema = {
-  name: 'Tracks',
+  name: 'Track',
   properties: {
     _id: 'string',
     date: 'string',
-    data: '{}',
+    data: 'TrackData[]',
   },
   primaryKey: '_id',
 };
 
 function uuid() {
-  return `id-${Math.random().toString(16).slice(2)}`;
+  return `${Math.random().toString(16).slice(2)}`;
 }
 
 /**
@@ -43,19 +43,65 @@ function formateDate(timestamp) {
 export default class Track extends Base {
   static Schema = Schema;
   constructor(db) {
-    super(db, Schema);
+    super(db, Schema, true);
   }
 
-  addRecord(timestamp, record) {
-    const reformat = {
+  createTrack(timestamp = new Date().getTime()) {
+    const track = {
       _id: uuid(),
       date: formateDate(setDateTimeZero(timestamp)),
-      data: {
-        date: timestamp,
-        ...record,
-      },
+      data: [],
     };
 
-    this.insert(reformat);
+    this.insert(track);
+
+    return track._id;
+  }
+
+  createIfNotExist(timestamp) {
+    const dateKey = formateDate(setDateTimeZero(timestamp));
+    this.realm.write(() => {
+      const item = this.table().filtered(`date = '${dateKey}'`);
+
+      if (item[0]) {
+        return item;
+      }
+
+      this.realm.create(this.schema.name, {
+        _id: uuid(),
+        date: dateKey,
+        data: [],
+      });
+    });
+  }
+
+  addRecord(
+    id,
+    Track = { _id: 'xxx-yyy', timestamp: new Date().getTime(), value: 0 },
+  ) {
+    this.realm.write(() => {
+      const item = this.table().filtered(`_id = '${id}'`);
+      Track._id = `${id}-${uuid()}`;
+
+      if (item[0]) {
+        item[0].data.push(Track);
+      } else {
+        this.realm.create(this.schema.name, {
+          _id: uuid(),
+          date: formateDate(setDateTimeZero(new Date().getTime())),
+          data: [Track],
+        });
+      }
+    });
+  }
+
+  removeRecord(id, TrackId) {
+    this.realm.write(() => {
+      const item = this.table().filtered(`_id = ${id}`);
+
+      if (item) {
+        item.data = item.data.filter(item => item._id !== TrackId);
+      }
+    });
   }
 }

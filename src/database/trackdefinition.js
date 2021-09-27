@@ -1,10 +1,11 @@
 import Base from './base';
 
 const Schema = {
-  name: 'TracksList',
+  name: 'TrackDefinition',
   properties: {
     _id: 'string',
     title: 'string',
+    value: 'int',
     unit: 'string',
     dayLimit: 'int',
   },

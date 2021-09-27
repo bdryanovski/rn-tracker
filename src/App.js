@@ -5,6 +5,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { navigationRef } from './navigator';
 import * as RootNavigation from './navigator';
 
+// Redux datalayer
+import { Provider } from 'react-redux';
+import { Store } from './store/store';
+
 // Bootstrap database
 import './database/index';
 
@@ -57,4 +61,12 @@ const App = () => {
   );
 };
 
-export default App;
+const AppWithRedux = () => {
+  return (
+    <Provider store={Store}>
+      <App />
+    </Provider>
+  );
+};
+
+export default AppWithRedux;
