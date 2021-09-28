@@ -1,12 +1,19 @@
 import { configureStore } from '@reduxjs/toolkit';
 
 // Reducers
-import tracksReducer, { actions } from './reducers/tracks.reducer';
+import tracksReducer, {
+  actions as trackActions,
+} from './reducers/tracks.reducer';
+
+import tracksDefinitionReducer, {
+  actions as trackDefinitionActions,
+} from './reducers/trackdefinitions.reducer';
 
 function configureAppStore(preloadedState = {}) {
   const store = configureStore({
     reducer: {
       tracks: tracksReducer,
+      tracksDefinitions: tracksDefinitionReducer,
     },
     preloadedState,
   });
@@ -17,10 +24,6 @@ function configureAppStore(preloadedState = {}) {
 export const Store = configureAppStore();
 
 export const Actions = {
-  tracks: { ...actions },
+  tracks: { ...trackActions },
+  trackDefinitions: { ...trackDefinitionActions },
 };
-
-// console.log('Actions', Actions, Actions.tracks.fetchTracks());
-//
-// Store.dispatch(Actions.tracks.fetchTracks());
-console.log(Store.getState());

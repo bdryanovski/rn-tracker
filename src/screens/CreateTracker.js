@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { StyleSheet, Text, View, FlatList, Pressable } from 'react-native';
 
 import CommonStyle from '../styles/common';
@@ -8,6 +9,8 @@ import Input from '../components/forms/input2';
 import Button from '../components/button';
 
 import { Collections } from '../database/index';
+
+import { Actions } from '../store/store';
 
 const Item = ({ item }) => {
   const onPressFunction = id => {
@@ -28,6 +31,17 @@ function CreateTracker({ route }) {
   const [unit, setUnit] = React.useState('');
   const [dayLimit, setDayLimit] = React.useState('');
 
+  const { trackDefinitions } = useSelector(state => {
+    return {
+      trackDefinitions: state.tracksDefinitions.list,
+    };
+  });
+  const dispatch = useDispatch();
+
+  React.useEffect(() => {
+    dispatch(Actions.trackDefinitions.fetchTrackDefinitions());
+  }, [dispatch]);
+
   const handleSave = () => {
     console.log({
       title: title,
@@ -36,17 +50,13 @@ function CreateTracker({ route }) {
     });
   };
 
-  // @TODO that is a bit sketchy here
-  const DATA = Collections.TrackLists.fetch().map(record => {
-    return {
-      id: record._id,
-      title: record.title,
-    };
-  });
-
   return (
     <View style={styles.container}>
-      <FlatList data={DATA} renderItem={Item} keyExtractor={item => item.id} />
+      <FlatList
+        data={trackDefinitions}
+        renderItem={Item}
+        keyExtractor={item => item._id}
+      />
       <Headline>Create new "Tracker"</Headline>
       <Input
         label="Title"

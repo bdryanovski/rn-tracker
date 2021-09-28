@@ -1,5 +1,7 @@
 import Base from './base';
 
+import { dateToday, dateYesterday } from '../utils/date';
+
 const Schema = {
   name: 'Track',
   properties: {
@@ -46,6 +48,15 @@ export default class Track extends Base {
     super(db, Schema, true);
   }
 
+  async fetchTimeline() {
+    await this.createIfNotExist(dateToday());
+    await this.createIfNotExist(dateYesterday());
+
+    console.log('fetchtimeline body');
+
+    return this.realm.objects(this.schema.name).sorted('date', true);
+  }
+
   createTrack(timestamp = new Date().getTime()) {
     const track = {
       _id: uuid(),
@@ -59,18 +70,23 @@ export default class Track extends Base {
   }
 
   createIfNotExist(timestamp) {
-    const dateKey = formateDate(setDateTimeZero(timestamp));
-    this.realm.write(() => {
-      const item = this.table().filtered(`date = '${dateKey}'`);
+    return new Promise(resolve => {
+      const dateKey = formateDate(setDateTimeZero(timestamp));
+      this.realm.write(() => {
+        const item = this.table().filtered(`date = '${dateKey}'`);
 
-      if (item[0]) {
-        return item;
-      }
+        if (item[0]) {
+          resolve(item[0]);
+          return;
+        }
 
-      this.realm.create(this.schema.name, {
-        _id: uuid(),
-        date: dateKey,
-        data: [],
+        const newItem = this.realm.create(this.schema.name, {
+          _id: uuid(),
+          date: dateKey,
+          data: [],
+        });
+
+        resolve(newItem);
       });
     });
   }

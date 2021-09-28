@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, Text } from 'react-native';
 
 import CommonStyle from '../styles/common';
 
@@ -22,7 +22,7 @@ function Item({ navigation, item, onUpdate = () => {} }) {
   };
 
   const calculateProgress = () => {
-    return (1 / item.dayLimit) * count;
+    return (1 / (item.dayLimit || 1)) * count;
   };
 
   return (
@@ -38,7 +38,7 @@ function Item({ navigation, item, onUpdate = () => {} }) {
 
         <Pressable
           style={styles.section}
-          onPress={() => navigation.navigate('Details', { item: item })}
+          onPress={() => navigation.navigate('Details', {})}
         >
           <Caption>{item.title}</Caption>
           <Paragraph>

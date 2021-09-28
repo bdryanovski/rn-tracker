@@ -10,13 +10,9 @@ import {
 import Item from './item';
 import Button from './button';
 
-import { GenerateTrackers } from '../utils/generate-data';
 import { isToday, isYesterday } from '../utils/date';
 
 import CommonStyle from '../styles/common';
-
-// @TODO replace this with actual data?!
-const DATA = GenerateTrackers();
 
 function humanReadableDate(timestamp) {
   if (isToday(timestamp)) {
@@ -33,31 +29,68 @@ function humanReadableDate(timestamp) {
   });
 }
 
-const Timeline = ({ navigation }) => (
-  <SafeAreaView style={styles.container}>
-    <SectionList
-      sections={DATA}
-      keyExtractor={(item, index) => item.date + index}
-      renderItem={({ item }) => {
-        return <Item navigation={navigation} item={item} />;
-      }}
-      renderSectionHeader={({ section }) => {
-        return (
-          <Text style={styles.header}>{humanReadableDate(section.date)}</Text>
+function mergeData(timeline, tracks) {
+  return timeline.reduce((acc, item) => {
+    const newItem = {
+      ...item,
+    };
+    newItem.data = [...item.data]
+      .map(track => {
+        return {
+          ...track,
+          ...(tracks.find(t => t._id === track.trackDefinitionId) || {}),
+        };
+      })
+      .reduce((acc, item) => {
+        const idx = acc.findIndex(
+          t => t.trackDefinitionId === item.trackDefinitionId,
         );
-      }}
-      renderSectionFooter={() => {
-        return (
-          <Button
-            style={CommonStyle.buttonTimelineAddMore}
-            title="Add more"
-            onPress={() => {}}
-          />
-        );
-      }}
-    />
-  </SafeAreaView>
-);
+        if (idx === -1) {
+          return [...acc, item];
+        } else {
+          acc[idx] = {
+            ...acc[idx],
+            value: acc[idx].value + item.value,
+          };
+          return acc;
+        }
+      }, []);
+    acc.push(newItem);
+    return acc;
+  }, []);
+}
+
+const Timeline = ({ navigation, timeline, tracks }) => {
+  return (
+    <SafeAreaView style={styles.container}>
+      <SectionList
+        sections={mergeData(timeline, tracks)}
+        keyExtractor={item => item._id}
+        renderItem={({ item }, index) => {
+          return (
+            <Item key={index} navigation={navigation} item={{ ...item }} />
+          );
+        }}
+        renderSectionHeader={({ section }, index) => {
+          return (
+            <Text key={index} style={styles.header}>
+              {section.date /* {humanReadableDate(section.date)} */}
+            </Text>
+          );
+        }}
+        renderSectionFooter={() => {
+          return (
+            <Button
+              style={CommonStyle.buttonTimelineAddMore}
+              title="Add more"
+              onPress={() => {}}
+            />
+          );
+        }}
+      />
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
