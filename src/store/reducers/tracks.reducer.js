@@ -11,55 +11,43 @@ const initialState = {
   timeline: [],
 };
 
-const fetchTracks = createAction('fetchTracks');
-
-const fetchTimeline = createAsyncThunk('fetchTimeline', async () => {
-  const data = await Collections.Tracks.fetchTimeline();
-  return data.toJSON();
-});
-
-const incrementTrack = createAction(
-  'incrementTrack',
-  function incrementTrack(trackId, trackDefinitionId, value) {
-    return {
-      payload: {
-        trackId,
-        trackDefinitionId,
-        value,
-        timestamp: new Date().getTime(),
-      },
-    };
-  },
-);
-
-const decrementTrack = createAction(
-  'decrementTrack',
-  function decrementTrack(trackId, recordId) {
-    return {
-      payload: {
-        trackId,
-        recordId,
-      },
-    };
-  },
-);
-
-export const actions = {
-  fetchTimeline: fetchTimeline,
-  fetchTracks: fetchTracks,
-  incrementTrack: incrementTrack,
-  decrementTrack: decrementTrack,
+export const Actions = {
+  fetch: createAsyncThunk('tracks/fetch', async () => {
+    const data = await Collections.Tracks.fetchTimeline();
+    return data.toJSON();
+  }),
+  increment: createAction(
+    'tracks/increment',
+    function incrementTrack(trackId, trackDefinitionId, value) {
+      return {
+        payload: {
+          trackId,
+          trackDefinitionId,
+          value,
+          timestamp: new Date().getTime(),
+        },
+      };
+    },
+  ),
+  decrement: createAction(
+    'tracks/decrement',
+    function decrementTrack(trackId, recordId) {
+      return {
+        payload: {
+          trackId,
+          recordId,
+        },
+      };
+    },
+  ),
 };
 
-const reducer = createReducer(initialState, builder => {
+const Reducer = createReducer(initialState, builder => {
   builder
-    .addCase(fetchTimeline.fulfilled, (state, action) => {
+    .addCase(Actions.fetch.fulfilled, (state, action) => {
       state.timeline = action.payload;
     })
-    .addCase(fetchTracks, state => {
-      // state.list = Collections.Tracks.fetch().map(r => r.toJSON());
-    })
-    .addCase(incrementTrack, (state, action) => {
+    .addCase(Actions.increment, (state, action) => {
       const { trackId, trackDefinitionId, value } = action.payload;
       Collections.Tracks.addRecord(trackId, {
         trackDefinitionId,
@@ -67,10 +55,10 @@ const reducer = createReducer(initialState, builder => {
         value,
       });
     })
-    .addCase(decrementTrack, (state, action) => {
+    .addCase(Actions.decrement, (state, action) => {
       const { trackId, recordId } = action.payload;
       Collections.Tracks.removeRecord(trackId, recordId);
     });
 });
 
-export default reducer;
+export default Reducer;

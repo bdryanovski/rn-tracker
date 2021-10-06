@@ -38,7 +38,7 @@ function Item({ navigation, item, onUpdate = () => {} }) {
 
         <Pressable
           style={styles.section}
-          onPress={() => navigation.navigate('Details', {})}
+          onPress={() => navigation.navigate('Details', { item: item })}
         >
           <Caption>{item.title}</Caption>
           <Paragraph>

@@ -61,6 +61,7 @@ function mergeData(timeline, tracks) {
 }
 
 const Timeline = ({ navigation, timeline, tracks }) => {
+  console.log('Render', navigation, timeline, tracks);
   return (
     <SafeAreaView style={styles.container}>
       <SectionList

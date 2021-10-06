@@ -39,7 +39,7 @@ function CreateTracker({ route }) {
   const dispatch = useDispatch();
 
   React.useEffect(() => {
-    dispatch(Actions.trackDefinitions.fetchTrackDefinitions());
+    dispatch(Actions.trackDefinitions.fetch());
   }, [dispatch]);
 
   const handleSave = () => {

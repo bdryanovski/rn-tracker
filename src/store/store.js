@@ -2,13 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 
 // Reducers
 import tracksReducer, {
-  actions as trackActions,
+  Actions as trackActions,
 } from './reducers/tracks.reducer';
 
 import tracksDefinitionReducer, {
-  actions as trackDefinitionActions,
+  Actions as trackDefinitionActions,
 } from './reducers/trackdefinitions.reducer';
 
+// Configure the Application Store.
 function configureAppStore(preloadedState = {}) {
   const store = configureStore({
     reducer: {
